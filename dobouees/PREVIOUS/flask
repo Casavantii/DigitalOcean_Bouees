@@ -1,0 +1,12 @@
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="static/style.css">
+    </head>
+    <body>
+
+        <h1>Bouées profileuses pour documenter l’impact du myriophylle à épis</h1>
+        <div>
+            {{ table }}
+        </div>
+    </body>
+</html>

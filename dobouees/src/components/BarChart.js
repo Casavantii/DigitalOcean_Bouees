@@ -7,6 +7,7 @@ import { Pie } from 'react-chartjs-2';
 const BarChart = () => {
   return (
     <div>
+      <p>Allo</p>
       <Pie
         data={{
           labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],

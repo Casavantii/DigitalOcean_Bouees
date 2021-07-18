@@ -1,0 +1,83 @@
+# 7DB-a9-h bruno.courtemanche@gmail.com
+
+from flask import Flask, request, abort, render_template
+import json
+import mysql.connector
+from tabulate import tabulate
+from markupsafe import Markup
+
+app = Flask(__name__)
+
+
+DB_HOST = 'localhost'  # IP or hostname of database
+DB_NAME = 'bruno'  # Name of the database to use
+DB_USER = 'root'  # Username for accessing database
+# DB_PASS = '5H8uvuM8f9HBkSv'  # Password for database user
+
+
+def insert_into_db(buoyIMEI, timestamp, tempUP, tempDOWN, doUP, doDOWN, depth):
+    try:
+      cnx = mysql.connector.connect(host=DB_HOST,
+                                    user=DB_USER,
+                                    database=DB_NAME)
+    except mysql.connector.Error as err:
+        return str(err)
+
+    try:
+        cursor = cnx.cursor()
+        sql = 'insert into vertical_profiles (buoyIMEI, timestamp, tempUP, tempDOWN, doUP, doDOWN, depth) values ( %s, %s, %s, %s, %s, %s, %s)'
+        values = (buoyIMEI, timestamp, tempUP, tempDOWN, doUP, doDOWN, depth)
+        cursor.execute(sql, values)
+    except Exception as err:
+        cnx.close()
+        return str(err)
+
+    cnx.close()
+    return 'success'
+
+
+def get_table():
+    try:
+      cnx = mysql.connector.connect(host=DB_HOST,
+                                    user=DB_USER,
+                                    password='',
+                                    database=DB_NAME)
+    except mysql.connector.Error as err:
+        print(err)
+        return str(err)
+
+    try:
+        cursor = cnx.cursor()
+        sql = 'select timestamp, tempUP, tempDOWN, doUP, doDOWN, depth from vertical_profiles'
+        cursor.execute(sql)
+        values = cursor.fetchall()
+    except Exception as err:
+        print(err)
+        cnx.close()
+        return str(err)
+
+    cnx.close()
+    return tabulate(sorted(values), headers=['Timestamp', 'TempUP', 'TempDOWN', 'doUP', 'doDOWN', 'depth'], tablefmt='html')
+
+@app.route("/")
+def hello():
+    values = get_table()
+    return render_template('index.html', table=Markup(values))
+
+
+@app.route('/upload')
+def upload():
+    buoyIMEI = request.args.get('buoyIMEI')
+    timestamp = request.args.get('timestamp')
+    tempUP = request.args.get('tempUP')
+    tempDOWN = request.args.get('tempDOWN')
+    doUP = request.args.get('doUP')
+    doDOWN = request.args.get('doDOWN')
+    depth = request.args.get('depth')
+
+    if buoyIMEI and timestamp and tempUP and tempDOWN and doUP and doDOWN and depth:
+        return insert_into_db(buoyIMEI, timestamp, tempUP, tempDOWN, doUP, doDOWN, depth)
+
+
+if __name__ == '__main__':
+    app.run()
