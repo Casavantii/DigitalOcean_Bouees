@@ -7,6 +7,9 @@ const App = () => {
   return (
     <div>
       <BarChart />
+      <div>
+        <p>Allo</p>
+      </div>
     </div>
   );
 };
